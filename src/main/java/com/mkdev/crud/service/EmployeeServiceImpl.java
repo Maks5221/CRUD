@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import com.mkdev.crud.mapper.EmployeeMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @AllArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -27,4 +30,34 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee is not exists with given ID: " + employeeId));
         return EmployeeMapper.mapToEmployeeDto(employee);
     }
+
+    @Override
+    public List<EmployeeDto> getAllEmployees() {
+        return employeeRepository.findAll()
+                .stream().map(EmployeeMapper::mapToEmployeeDto)
+                .toList();
+    }
+
+    @Override
+    public EmployeeDto updateEmployee(Long employeeId, EmployeeDto updatedEmployee) {
+        var employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee is not exists with given ID: " + employeeId));
+
+        employee.setFirstName(updatedEmployee.firstName());
+        employee.setLastName(updatedEmployee.lastName());
+        employee.setEmail(updatedEmployee.email());
+
+        employeeRepository.save(employee);
+
+        return EmployeeMapper.mapToEmployeeDto(employee);
+    }
+
+    @Override
+    public void deleteEmployee(Long employeeId) {
+        var employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee is not exists with given ID: " + employeeId));
+
+        employeeRepository.deleteById(employeeId);
+    }
+
 }
